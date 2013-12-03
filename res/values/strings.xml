@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Google Search API</string>
+    <string name="permission_description">Allows this package to add or override commands in the Google Search app</string>
+    <string name="permission_label">Google Search/Now API</string>
+    <string name="action_settings">Settings</string>
+    <string name="menu_support_thread">Visit support thread</string>
+    <string name="intro_text">This module adds an API to the Google Search app, commonly referred to as Google Now.\n\nWith this, you can install modules made by developers that extend Google Search\'s functionality. For more modules, visit the support thread from the action bar.</string>
+    <string name="status_text">
+		<![CDATA[
+		    <b>Status:</b> %s<br/>
+		  ]]>
+    </string>
+    <string name="hide_app">Hide icon from drawer</string>
+    <string name="show_app">Show app in drawer</string>
+    <string name="okay">"Okay, got it!"</string>
+    <string name="we_have_liftoff">"Up and running"</string>
+    <string name="we_have_a_problem">"Module inactive or something went wrong"</string>
+    <string name="google_search_not_installed">"Google Search not installed"</string>
+    <string name="delay_broadcasts">Delay commands for GEL</string>
+    <string name="how_do_i_get_back_here">"You may access this app again by tapping the module in Xposed Installer, or by searching/saying \"Show Google Now API intro\" in the Google Search API."</string>
+    <string name="copyright_text">Copyright © 2013 Mohammad Abu-Garbeyyeh</string>
+    <string name="about">About</string>
+    <string name="about_text">Google Search API allows developers to hook onto Google\'s Search app and provide their own functionality.\n\nAPI © 2013 Mohammad Abu-Garbeyyeh</string>
+    <string name="title_section1">Intro</string>
+    <string name="title_section2">Plugins</string>
+    <string name="no_ui_plugin">This plugin has no UI</string>
+    <string name="donate">Donate</string>
+    <string name="prevent_duplicates">Prevent duplicate searches</string>
+
+</resources>
