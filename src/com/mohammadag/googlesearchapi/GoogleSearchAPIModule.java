@@ -108,15 +108,6 @@ public class GoogleSearchAPIModule implements IXposedHookLoadPackage, IXposedHoo
 								e1.printStackTrace();
 							}
 						}
-//						// enqueue
-//						Method method = XposedHelpers.findMethodBestMatch(ttsManager.getClass(), "a",
-//								String.class, "cxu", int.class);
-//						try {
-//							// added 0 because the originally called method doesn't exist in the obfuscated apk
-//							method.invoke(ttsManager, string, null, 0);
-//						} catch (Exception e) {
-//							e.printStackTrace();
-//						}
 					}
 				}, new IntentFilter(GoogleSearchApi.INTENT_REQUEST_SPEAK));
 
