@@ -4,15 +4,15 @@ import static de.robv.android.xposed.XposedHelpers.findAndHookMethod;
 import static de.robv.android.xposed.XposedHelpers.findClass;
 import static de.robv.android.xposed.XposedHelpers.getObjectField;
 
-import java.lang.reflect.Method;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.speech.tts.TextToSpeech;
 import android.text.TextUtils;
-
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.IXposedHookZygoteInit;
 import de.robv.android.xposed.XC_MethodHook;
@@ -93,15 +93,30 @@ public class GoogleSearchAPIModule implements IXposedHookLoadPackage, IXposedHoo
 
 						Object mVoiceSearchServices = getObjectField(thisObject, "mVoiceSearchServices");
 						// getLocalTtsManager
-						Object ttsManager = XposedHelpers.callMethod(mVoiceSearchServices, "asi");						
-						// enqueue
-						Method method = XposedHelpers.findMethodBestMatch(ttsManager.getClass(), "a", String.class, Runnable.class);
+						Object ttsManager = XposedHelpers.callMethod(mVoiceSearchServices, "asi");
 						try {
-							// added 0 because the originally called method doesn't exist in the obfuscated apk
-							method.invoke(ttsManager, string, null, 0);
-						} catch (Exception e) {
+							XposedHelpers.callMethod(ttsManager, "a", string, null, 0);
+						} catch (NoSuchMethodError e) {
 							e.printStackTrace();
+							try {
+								Field f = XposedHelpers.findFirstFieldByExactType(ttsManager.getClass(),
+										TextToSpeech.class);
+								f.setAccessible(true);
+								TextToSpeech speech = (TextToSpeech) f.get(ttsManager);
+								speech.speak(string, TextToSpeech.QUEUE_FLUSH, null);
+							} catch (Exception e1) {
+								e1.printStackTrace();
+							}
 						}
+//						// enqueue
+//						Method method = XposedHelpers.findMethodBestMatch(ttsManager.getClass(), "a",
+//								String.class, "cxu", int.class);
+//						try {
+//							// added 0 because the originally called method doesn't exist in the obfuscated apk
+//							method.invoke(ttsManager, string, null, 0);
+//						} catch (Exception e) {
+//							e.printStackTrace();
+//						}
 					}
 				}, new IntentFilter(GoogleSearchApi.INTENT_REQUEST_SPEAK));
 

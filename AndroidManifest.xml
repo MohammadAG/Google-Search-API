@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.mohammadag.googlesearchapi"
-    android:versionCode="2"
-    android:versionName="1.1" >
+    android:versionCode="5"
+    android:versionName="1.2.1" >
 
     <permission
         android:name="com.mohammadag.googlesearchapi.permission.ACCESS_GGOGLE_SEARCH_API"
@@ -27,7 +27,7 @@
             android:value="true" />
         <meta-data
             android:name="xposedminversion"
-            android:value="30+" />
+            android:value="42+" />
         <meta-data
             android:name="xposeddescription"
             android:value="Adds a Google Search API" />
