@@ -12,6 +12,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.text.TextUtils;
+
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.IXposedHookZygoteInit;
 import de.robv.android.xposed.XC_MethodHook;
@@ -61,12 +62,21 @@ public class GoogleSearchAPIModule implements IXposedHookLoadPackage, IXposedHoo
 				}
 			}
 		};
-
-		Class<?> Query = findClass("com.google.android.search.shared.api.Query", lpparam.classLoader);
-		Class<?> MyVoiceSearchControllerListener =
-				findClass("com.google.android.search.core.SearchController$MyVoiceSearchControllerListener", lpparam.classLoader);
-		Class<?> SearchController = findClass("com.google.android.search.core.SearchController", lpparam.classLoader);
-		Class<?> SearchResultFetcher = findClass("com.google.android.search.core.prefetch.SearchResultFetcher", lpparam.classLoader);
+		
+		// com.google.android.search.shared.api.Query
+		Class<?> Query = findClass("com.google.android.shared.search.Query", lpparam.classLoader);
+		
+		// com.google.android.search.core.SearchController$MyVoiceSearchControllerListener
+		Class<?> MyVoiceSearchControllerListener = findClass("bae", lpparam.classLoader);
+		
+		// com.google.android.search.core.SearchController
+		Class<?> SearchController = findClass("azs", lpparam.classLoader);
+		
+		// com.google.android.search.core.prefetch.SearchResultFetcher
+		Class<?> SearchResultFetcher = findClass("blq", lpparam.classLoader);
+		
+		// com.google.android.search.gel.SearchOverlayImpl
+		Class<?> SearchOverlayImpl = findClass("ccu", lpparam.classLoader);
 
 		XposedBridge.hookAllConstructors(SearchController, new XC_MethodHook() {
 			@Override
@@ -82,10 +92,13 @@ public class GoogleSearchAPIModule implements IXposedHookLoadPackage, IXposedHoo
 							return;
 
 						Object mVoiceSearchServices = getObjectField(thisObject, "mVoiceSearchServices");
-						Object ttsManager = XposedHelpers.callMethod(mVoiceSearchServices, "getLocalTtsManager"); 
-						Method method = XposedHelpers.findMethodBestMatch(ttsManager.getClass(), "enqueue", String.class, Runnable.class);
+						// getLocalTtsManager
+						Object ttsManager = XposedHelpers.callMethod(mVoiceSearchServices, "asi");						
+						// enqueue
+						Method method = XposedHelpers.findMethodBestMatch(ttsManager.getClass(), "a", String.class, Runnable.class);
 						try {
-							method.invoke(ttsManager, string, null);
+							// added 0 because the originally called method doesn't exist in the obfuscated apk
+							method.invoke(ttsManager, string, null, 0);
 						} catch (Exception e) {
 							e.printStackTrace();
 						}
@@ -101,12 +114,12 @@ public class GoogleSearchAPIModule implements IXposedHookLoadPackage, IXposedHoo
 			}
 		});
 
-		findAndHookMethod(SearchResultFetcher, "obtainSearchResult", Query, new XC_MethodHook() {
+		// obtainSearchResult
+		findAndHookMethod(SearchResultFetcher, "s", Query, new XC_MethodHook() {
 			@Override
 			protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
 				Object queryResult = param.args[0];
-				CharSequence searchQueryText =
-						(CharSequence) getObjectField(queryResult, "mQueryChars");
+				CharSequence searchQueryText = (CharSequence) getObjectField(queryResult, "mQueryChars");
 				Object mCache = getObjectField(param.thisObject, "mCache");
 				Object mClock = getObjectField(param.thisObject, "mClock");
 				Object mCachedResult = XposedHelpers.callMethod(mCache, "get", queryResult,
@@ -135,7 +148,8 @@ public class GoogleSearchAPIModule implements IXposedHookLoadPackage, IXposedHoo
 			}
 		});
 
-		XposedBridge.hookAllMethods(MyVoiceSearchControllerListener, "onRecognitionResult", new XC_MethodHook() {
+		// onRecognitionResult
+		findAndHookMethod(MyVoiceSearchControllerListener, "a", CharSequence.class, findClass("glq", lpparam.classLoader), findClass("blk", lpparam.classLoader), new XC_MethodHook() {
 			@Override
 			protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
 				CharSequence voiceResult = (CharSequence) param.args[0];
@@ -151,9 +165,8 @@ public class GoogleSearchAPIModule implements IXposedHookLoadPackage, IXposedHoo
 
 		/* GEL workaround, GEL opens Google Search eventually, so this will overlay whatever
 		 * activity a developer has made. This broadcasts intents after the window has gained focus.
-		 */
-		findAndHookMethod("com.google.android.search.gel.SearchOverlayImpl", lpparam.classLoader,
-				"onWindowFocusChanged", boolean.class, new XC_MethodHook() {
+		 */				
+		findAndHookMethod(SearchOverlayImpl, "onWindowFocusChanged", boolean.class, new XC_MethodHook() {
 			@Override
 			protected void afterHookedMethod(MethodHookParam param) throws Throwable {
 				boolean hasFocus = (Boolean) param.args[0];
