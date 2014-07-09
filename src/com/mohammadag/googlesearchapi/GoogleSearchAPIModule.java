@@ -1,18 +1,15 @@
 package com.mohammadag.googlesearchapi;
 
-import static de.robv.android.xposed.XposedHelpers.findAndHookMethod;
-import static de.robv.android.xposed.XposedHelpers.findClass;
-import static de.robv.android.xposed.XposedHelpers.getObjectField;
-
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.speech.tts.TextToSpeech;
 import android.text.TextUtils;
+
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.IXposedHookZygoteInit;
 import de.robv.android.xposed.XC_MethodHook;
@@ -21,6 +18,10 @@ import de.robv.android.xposed.XSharedPreferences;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam;
+
+import static de.robv.android.xposed.XposedHelpers.findAndHookMethod;
+import static de.robv.android.xposed.XposedHelpers.findClass;
+import static de.robv.android.xposed.XposedHelpers.getObjectField;
 
 public class GoogleSearchAPIModule implements IXposedHookLoadPackage, IXposedHookZygoteInit {
 
@@ -62,21 +63,29 @@ public class GoogleSearchAPIModule implements IXposedHookLoadPackage, IXposedHoo
 				}
 			}
 		};
-		
+
 		// com.google.android.search.shared.api.Query
 		Class<?> Query = findClass("com.google.android.shared.search.Query", lpparam.classLoader);
-		
+
+        // com.google.android.search.core.SearchController
+        // Google Search V3.4: azs
+        // Google Search V3.5: bir
+        Class<?> SearchController = findClass("bir", lpparam.classLoader);
+
 		// com.google.android.search.core.SearchController$MyVoiceSearchControllerListener
-		Class<?> MyVoiceSearchControllerListener = findClass("bae", lpparam.classLoader);
-		
-		// com.google.android.search.core.SearchController
-		Class<?> SearchController = findClass("azs", lpparam.classLoader);
-		
+        // Google Search V3.4: bae
+        // Google Search V3.5: bjb
+		Class<?> MyVoiceSearchControllerListener = findClass("bjb", lpparam.classLoader);
+
 		// com.google.android.search.core.prefetch.SearchResultFetcher
-		Class<?> SearchResultFetcher = findClass("blq", lpparam.classLoader);
-		
+        // Google Search V3.4: blq
+        // Google Search V3.5: bur
+		Class<?> SearchResultFetcher = findClass("bur", lpparam.classLoader);
+
 		// com.google.android.search.gel.SearchOverlayImpl
-		Class<?> SearchOverlayImpl = findClass("ccu", lpparam.classLoader);
+        // Google Search V3.4: ccu
+        // Google Search V3.5: cmh
+		Class<?> SearchOverlayImpl = findClass("cmh", lpparam.classLoader);
 
 		XposedBridge.hookAllConstructors(SearchController, new XC_MethodHook() {
 			@Override
@@ -93,8 +102,12 @@ public class GoogleSearchAPIModule implements IXposedHookLoadPackage, IXposedHoo
 
 						Object mVoiceSearchServices = getObjectField(thisObject, "mVoiceSearchServices");
 						// getLocalTtsManager
-						Object ttsManager = XposedHelpers.callMethod(mVoiceSearchServices, "asi");
+                        // Google Search V3.4: asi
+                        // Google Search V3.5: azL
+						Object ttsManager = XposedHelpers.callMethod(mVoiceSearchServices, "azL");
 						try {
+                            // Google Search V3.4: a
+                            // Google Search V3.5: a
 							XposedHelpers.callMethod(ttsManager, "a", string, null, 0);
 						} catch (NoSuchMethodError e) {
 							e.printStackTrace();
@@ -121,7 +134,9 @@ public class GoogleSearchAPIModule implements IXposedHookLoadPackage, IXposedHoo
 		});
 
 		// obtainSearchResult
-		findAndHookMethod(SearchResultFetcher, "s", Query, new XC_MethodHook() {
+        // Google Search V3.4: s
+        // Google Search V3.5: w
+		findAndHookMethod(SearchResultFetcher, "w", Query, new XC_MethodHook() {
 			@Override
 			protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
 				Object queryResult = param.args[0];
@@ -131,7 +146,7 @@ public class GoogleSearchAPIModule implements IXposedHookLoadPackage, IXposedHoo
 				Object mCachedResult = XposedHelpers.callMethod(mCache, "get", queryResult,
 						XposedHelpers.callMethod(mClock, "elapsedRealtime"),
 						true);
-				
+
 				mPreferences.reload();
 
 				/* Not doing this causes a usability issue. If the user has a search showing
@@ -155,7 +170,9 @@ public class GoogleSearchAPIModule implements IXposedHookLoadPackage, IXposedHoo
 		});
 
 		// onRecognitionResult
-		findAndHookMethod(MyVoiceSearchControllerListener, "a", CharSequence.class, findClass("glq", lpparam.classLoader), findClass("blk", lpparam.classLoader), new XC_MethodHook() {
+        // Google Search V3.4: s // a(CharSequence paramCharSequence, glq paramglq, blk paramblk)
+        // Google Search V3.5: w // a(CharSequence paramCharSequence, hea paramhea, bul parambul)
+		findAndHookMethod(MyVoiceSearchControllerListener, "a", CharSequence.class, findClass("heb", lpparam.classLoader), findClass("bul", lpparam.classLoader), new XC_MethodHook() {
 			@Override
 			protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
 				CharSequence voiceResult = (CharSequence) param.args[0];
